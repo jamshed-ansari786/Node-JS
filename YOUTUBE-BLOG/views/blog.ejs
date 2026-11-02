@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("./partials/head") %>
+    <title><%= blog.title %> | Blogify</title>
+  </head>
+  <body>
+    <%- include("./partials/nav") %>
+
+    <main class="container py-4" style="max-width: 900px">
+      <a href="/" class="btn btn-link px-0 mb-3">&larr; All posts</a>
+      <article>
+        <figure class="mb-4">
+          <img
+            src="<%= blog.coverImageURL || '/default.png.avif' %>"
+            class="img-fluid rounded w-100"
+            alt="<%= blog.coverImageDescription || `Cover for ${blog.title}` %>"
+            style="max-height: 440px; object-fit: cover"
+          >
+          <% if (blog.coverImageDescription) { %>
+            <figcaption class="figure-caption mt-2"><%= blog.coverImageDescription %></figcaption>
+          <% } %>
+        </figure>
+        <h1><%= blog.title %></h1>
+        <p class="text-muted">
+          By <%= blog.createdBy ? blog.createdBy.fullName : "Unknown author" %>
+          · <%= new Date(blog.createdAt).toLocaleDateString() %>
+        </p>
+        <% if (locals.user && blog.createdBy && String(blog.createdBy._id) === String(user._id)) { %>
+          <div class="d-flex gap-2 mb-4">
+            <a href="/blog/<%= blog._id %>/edit" class="btn btn-outline-primary">Edit post</a>
+            <form action="/blog/<%= blog._id %>/delete" method="post"
+              onsubmit="return confirm('Delete this post? This cannot be undone.');">
+              <button type="submit" class="btn btn-outline-danger">Delete post</button>
+            </form>
+          </div>
+        <% } %>
+        <div class="lh-lg" style="white-space: pre-wrap"><%= blog.body %></div>
+      </article>
+
+      <section id="comments" class="mt-5">
+        <h2 class="h3">Comments (<%= blog.comments.length %>)</h2>
+        <% if (locals.user) { %>
+          <form action="/blog/<%= blog._id %>/comments" method="post" class="my-4">
+            <div class="mb-3">
+              <label for="commentBody" class="form-label">Add a comment</label>
+              <textarea
+                class="form-control"
+                id="commentBody"
+                name="body"
+                rows="3"
+                maxlength="3000"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Post comment</button>
+          </form>
+        <% } else { %>
+          <p><a href="/user/signin">Sign in</a> to join the conversation.</p>
+        <% } %>
+
+        <% if (blog.comments.length === 0) { %>
+          <p class="text-muted">No comments yet.</p>
+        <% } else { %>
+          <div class="list-group">
+            <% blog.comments.forEach(comment => { %>
+              <article class="list-group-item" id="comment-<%= comment._id %>">
+                <p class="mb-2" style="white-space: pre-wrap"><%= comment.body %></p>
+                <p class="small text-muted mb-0">
+                  <%= comment.createdBy ? comment.createdBy.fullName : "Unknown user" %>
+                  · <%= new Date(comment.createdAt).toLocaleString() %>
+                </p>
+                <% if (locals.user && (String(comment.createdBy && comment.createdBy._id) === String(user._id) || user.role === "ADMIN" || (blog.createdBy && String(blog.createdBy._id) === String(user._id)))) { %>
+                  <form
+                    action="/blog/<%= blog._id %>/comments/<%= comment._id %>/delete"
+                    method="post"
+                    class="mt-2"
+                    onsubmit="return confirm('Delete this comment and all its replies?');"
+                  >
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete comment</button>
+                  </form>
+                <% } %>
+
+                <% if (comment.replies.length > 0) { %>
+                  <div class="ms-3 mt-3 border-start ps-3">
+                    <% comment.replies.forEach(reply => { %>
+                      <div class="mb-3" id="reply-<%= reply._id %>">
+                        <p class="mb-1" style="white-space: pre-wrap"><%= reply.body %></p>
+                        <p class="small text-muted mb-0">
+                          <%= reply.createdBy ? reply.createdBy.fullName : "Unknown user" %>
+                          · <%= new Date(reply.createdAt).toLocaleString() %>
+                        </p>
+                        <% if (locals.user && (String(reply.createdBy && reply.createdBy._id) === String(user._id) || String(comment.createdBy && comment.createdBy._id) === String(user._id) || user.role === "ADMIN" || (blog.createdBy && String(blog.createdBy._id) === String(user._id)))) { %>
+                          <form
+                            action="/blog/<%= blog._id %>/comments/<%= comment._id %>/replies/<%= reply._id %>/delete"
+                            method="post"
+                            class="mt-2"
+                            onsubmit="return confirm('Delete this reply?');"
+                          >
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete reply</button>
+                          </form>
+                        <% } %>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <% if (locals.user) { %>
+                  <details class="mt-3">
+                    <summary class="text-primary" style="cursor: pointer">Reply</summary>
+                    <form
+                      action="/blog/<%= blog._id %>/comments/<%= comment._id %>/replies"
+                      method="post"
+                      class="mt-2"
+                    >
+                      <label for="reply-<%= comment._id %>" class="visually-hidden">
+                        Reply to <%= comment.createdBy ? comment.createdBy.fullName : "this comment" %>
+                      </label>
+                      <textarea
+                        class="form-control mb-2"
+                        id="reply-<%= comment._id %>"
+                        name="body"
+                        rows="2"
+                        maxlength="3000"
+                        placeholder="Write a reply"
+                        required
+                      ></textarea>
+                      <button type="submit" class="btn btn-sm btn-outline-primary">Post reply</button>
+                    </form>
+                  </details>
+                <% } else { %>
+                  <a class="small d-inline-block mt-3" href="/user/signin">Sign in to reply</a>
+                <% } %>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+    </main>
+
+    <%- include("./partials/script") %>
+  </body>
+</html>

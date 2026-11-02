@@ -1,0 +1,8 @@
+schema - define the structure
+ schema - model
+ using model we do CRUD operastion
+
+ C - Create
+ R - Read
+ U - Update
+ D - DELETE

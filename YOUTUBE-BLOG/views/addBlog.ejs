@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("./partials/head") %>
+    <title>Add Blog</title>
+  </head>
+  <body>
+    <%- include("./partials/nav") %>
+
+    <main class="container py-4" style="max-width: 760px">
+      <h1 class="mb-4">Write a blog post</h1>
+      <form action="/blog/add-new" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="coverImage" class="form-label">Cover Image</label>
+          <input
+            type="file"
+            class="form-control"
+            id="coverImage"
+            name="coverImage"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+          />
+          <div class="form-text">Optional. JPEG, PNG, WebP, or GIF; maximum 5 MB.</div>
+        </div>
+        <div class="mb-3">
+          <label for="coverImageDescription" class="form-label">Image description</label>
+          <textarea
+            class="form-control"
+            id="coverImageDescription"
+            name="coverImageDescription"
+            rows="3"
+            maxlength="500"
+            aria-describedby="imageDescriptionHelp"
+          ></textarea>
+          <div id="imageDescriptionHelp" class="form-text">
+            Describe what the image shows. This text is shown with the image and used as its accessible description.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            maxlength="160"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="body" class="form-label">Body</label>
+          <textarea class="form-control" id="body" name="body" rows="12" maxlength="100000" required></textarea>
+        </div>
+        <div class="mb-3">
+          <button type="submit" class="btn btn-primary">Publish post</button>
+        </div>
+      </form>
+    </main>
+
+    <%- include("./partials/script") %>
+  </body>
+</html>
